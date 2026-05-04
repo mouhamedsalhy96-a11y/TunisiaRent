@@ -1,4 +1,5 @@
 'use client'
+
 import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Upload, X, ImagePlus, Loader2 } from 'lucide-react'
@@ -19,14 +20,24 @@ export default function UploadPhotos({ onImagesChange, images }: Props) {
 
     if (images.length + fichiers.length > 6) {
       setErreur('Maximum 6 photos par annonce.')
+      if (inputRef.current) inputRef.current.value = ''
       return
     }
 
     setUploading(true)
     setErreur('')
+
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      setErreur('Vous devez être connecté pour ajouter des photos.')
+      setUploading(false)
+      if (inputRef.current) inputRef.current.value = ''
+      return
+    }
 
     const nouvellesUrls: string[] = []
 
@@ -36,7 +47,7 @@ export default function UploadPhotos({ onImagesChange, images }: Props) {
         continue
       }
 
-      const ext = fichier.name.split('.').pop()
+      const ext = fichier.name.split('.').pop() || 'jpg'
       const nomFichier = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
 
       const { error } = await supabase.storage
@@ -48,16 +59,13 @@ export default function UploadPhotos({ onImagesChange, images }: Props) {
         continue
       }
 
-      const { data: urlData } = supabase.storage
-        .from('annonces')
-        .getPublicUrl(nomFichier)
-
+      const { data: urlData } = supabase.storage.from('annonces').getPublicUrl(nomFichier)
       nouvellesUrls.push(urlData.publicUrl)
     }
 
     onImagesChange([...images, ...nouvellesUrls])
-    setUploading(false)
 
+    setUploading(false)
     if (inputRef.current) inputRef.current.value = ''
   }
 
@@ -67,7 +75,6 @@ export default function UploadPhotos({ onImagesChange, images }: Props) {
 
   return (
     <div>
-      {/* Grille photos */}
       {images.length > 0 && (
         <div className="grid grid-cols-3 gap-3 mb-4">
           {images.map((url, i) => (
@@ -88,7 +95,6 @@ export default function UploadPhotos({ onImagesChange, images }: Props) {
             </div>
           ))}
 
-          {/* Slot ajouter si moins de 6 */}
           {images.length < 6 && (
             <button
               type="button"
@@ -103,7 +109,6 @@ export default function UploadPhotos({ onImagesChange, images }: Props) {
         </div>
       )}
 
-      {/* Zone de drop initiale */}
       {images.length === 0 && (
         <button
           type="button"
@@ -132,9 +137,7 @@ export default function UploadPhotos({ onImagesChange, images }: Props) {
         </div>
       )}
 
-      {erreur && (
-        <p className="text-red-500 text-sm mt-2">{erreur}</p>
-      )}
+      {erreur && <p className="text-red-500 text-sm mt-2">{erreur}</p>}
 
       <input
         ref={inputRef}

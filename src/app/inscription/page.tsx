@@ -1,4 +1,5 @@
 'use client'
+
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -49,14 +50,31 @@ export default function PageInscription() {
       return
     }
 
-    // Si l'utilisateur est créé et la session est active (confirm email désactivé)
+    // ✅ Save profile + contacts in DB (so listing detail can read it)
+    const userId = data.user?.id
+    if (userId) {
+      // Public profile
+      await supabase.from('profiles').upsert({
+        id: userId,
+        nom_complet: nom,
+      })
+
+      // Private contact info (requires table profile_contacts)
+      await supabase.from('profile_contacts').upsert({
+        id: userId,
+        telephone: telephone || null,
+        email: email || null,
+      })
+    }
+
+    // If session active (email confirmation disabled)
     if (data.session) {
       router.push('/dashboard')
       router.refresh()
       return
     }
 
-    // Si confirm email est activé
+    // If confirm email is enabled
     setSucces(true)
     setChargement(false)
   }
