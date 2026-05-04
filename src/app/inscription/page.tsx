@@ -50,31 +50,29 @@ export default function PageInscription() {
       return
     }
 
-    // ✅ Save profile + contacts in DB (so listing detail can read it)
-    const userId = data.user?.id
-    if (userId) {
-      // Public profile
+    // ✅ If session exists, user is authenticated => we can write to DB
+    if (data.session && data.user) {
+      const userId = data.user.id
+
+      // public profile
       await supabase.from('profiles').upsert({
         id: userId,
         nom_complet: nom,
       })
 
-      // Private contact info (requires table profile_contacts)
+      // private contacts
       await supabase.from('profile_contacts').upsert({
         id: userId,
         telephone: telephone || null,
         email: email || null,
       })
-    }
 
-    // If session active (email confirmation disabled)
-    if (data.session) {
       router.push('/dashboard')
       router.refresh()
       return
     }
 
-    // If confirm email is enabled
+    // Email confirmation enabled => show success screen
     setSucces(true)
     setChargement(false)
   }
@@ -133,7 +131,7 @@ export default function PageInscription() {
                 <input
                   type="text"
                   value={nom}
-                  onChange={e => setNom(e.target.value)}
+                  onChange={(e) => setNom(e.target.value)}
                   required
                   placeholder="Mohamed Ben Ali"
                   className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-300 focus:ring-2 focus:ring-red-50 transition-all"
@@ -148,7 +146,7 @@ export default function PageInscription() {
                 <input
                   type="email"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="votre@email.com"
                   className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-300 focus:ring-2 focus:ring-red-50 transition-all"
@@ -165,7 +163,7 @@ export default function PageInscription() {
                 <input
                   type="tel"
                   value={telephone}
-                  onChange={e => setTelephone(e.target.value)}
+                  onChange={(e) => setTelephone(e.target.value)}
                   placeholder="XX XXX XXX"
                   className="w-full pl-14 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-300 focus:ring-2 focus:ring-red-50 transition-all"
                 />
@@ -179,7 +177,7 @@ export default function PageInscription() {
                 <input
                   type={afficherMdp ? 'text' : 'password'}
                   value={motDePasse}
-                  onChange={e => setMotDePasse(e.target.value)}
+                  onChange={(e) => setMotDePasse(e.target.value)}
                   required
                   placeholder="Minimum 6 caractères"
                   className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-300 focus:ring-2 focus:ring-red-50 transition-all"
