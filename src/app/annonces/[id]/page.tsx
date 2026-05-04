@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import { MapPin, Bed, Bath, Square, Sofa, Phone, Mail, ArrowLeft, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { LABELS_DUREE, COULEURS_DUREE } from '@/lib/types'
@@ -113,8 +112,8 @@ export default async function PageDetailAnnonce({ params }: { params: Promise<{ 
         <div className="lg:col-span-2">
           {/* Galerie photos */}
           <div className="rounded-2xl overflow-hidden bg-gray-100 h-72 md:h-96 mb-6 relative">
-            {annonce.images && annonce.images.length > 0 ? (
-              <Image src={annonce.images[0]} alt={annonce.titre} fill className="object-cover" />
+            {annonce.images?.[0] ? (
+              <img src={annonce.images[0]} alt={annonce.titre} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <div className="text-center text-gray-400">
@@ -228,14 +227,10 @@ export default async function PageDetailAnnonce({ params }: { params: Promise<{ 
                       +216 {telephone}
                     </a>
                   ) : (
-                    <button
-                      className="w-full flex items-center justify-center gap-2 text-white font-semibold py-3.5 rounded-xl opacity-50 cursor-not-allowed"
-                      style={{ backgroundColor: '#C8102E' }}
-                      disabled
-                    >
+                    <div className="w-full flex items-center justify-center gap-2 text-gray-500 font-semibold py-3.5 rounded-xl border border-gray-200 bg-gray-50">
                       <Phone className="w-4 h-4" />
-                      Numéro non renseigné
-                    </button>
+                      Non renseigné
+                    </div>
                   )
                 ) : (
                   <Link
@@ -259,13 +254,10 @@ export default async function PageDetailAnnonce({ params }: { params: Promise<{ 
                       Envoyer un email
                     </a>
                   ) : (
-                    <button
-                      className="w-full flex items-center justify-center gap-2 font-semibold py-3.5 rounded-xl border-2 border-gray-200 text-gray-500 cursor-not-allowed"
-                      disabled
-                    >
+                    <div className="w-full flex items-center justify-center gap-2 font-semibold py-3.5 rounded-xl border-2 border-gray-200 text-gray-500 bg-gray-50">
                       <Mail className="w-4 h-4" />
-                      Email non renseigné
-                    </button>
+                      Non renseigné
+                    </div>
                   )
                 ) : (
                   <Link
