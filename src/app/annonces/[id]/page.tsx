@@ -2,82 +2,71 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { MapPin, Bed, Bath, Square, Sofa, Phone, Mail, ArrowLeft, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
-import ImageGallery from '@/components/ImageGallery'
 import { LABELS_DUREE, COULEURS_DUREE } from '@/lib/types'
 
-export default async function PageDetailAnnonce({ params }: { params: Promise<{ id: string }> }) {
+type ProfilSansEmail = {
+  nom_complet: string | null
+  telephone: string | null
+}
+
+type ProfilAvecEmail = ProfilSansEmail & {
+  email: string | null
+}
+
+export default async function PageDetailAnnonce({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
   const { id } = await params
   const supabase = await createClient()
 
-  // ✅ Who is viewing?
   const {
     data: { user: viewer },
   } = await supabase.auth.getUser()
   const estConnecte = !!viewer
 
-  const { data: annonce, error, status } = await supabase
+  const { data: annonce, error } = await supabase
     .from('listings')
     .select('*, categories(*), regions(*)')
     .eq('id', id)
     .maybeSingle()
 
-  if (error) {
-    const code = error.code
+  if (error || !annonce) notFound()
 
-    if (status === 401 || status === 403 || code === '42501') {
-      return (
-        <div className="max-w-3xl mx-auto px-4 py-14">
-          <div className="bg-white border border-gray-100 rounded-2xl p-8 text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Accès restreint</h1>
-            <p className="text-gray-500 mb-6">Connectez-vous pour voir les détails de cette annonce.</p>
+  // ✅ Profil propriétaire (nom + téléphone + email si colonne existe)
+  let telephone: string | null = null
+  let email: string | null = null
+  let nomProprietaire: string | null = null
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link
-                href={`/connexion?redirect=/annonces/${id}`}
-                className="inline-flex items-center justify-center px-6 py-3 rounded-xl text-white font-semibold"
-                style={{ backgroundColor: '#C8102E' }}
-              >
-                Se connecter
-              </Link>
-
-              <Link
-                href="/annonces"
-                className="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50"
-              >
-                Retour aux annonces
-              </Link>
-            </div>
-          </div>
-        </div>
-      )
-    }
-
-    notFound()
-  }
-
-  if (!annonce) {
-    notFound()
-  }
-
-  // ✅ Profile (try with email; if column doesn't exist, fallback safely)
-  let profil: { nom_complet?: string | null; telephone?: string | null; email?: string | null } | null = null
-
-  const profilTry = await supabase
-    .from('profiles')
-    .select('nom_complet, telephone, email')
-    .eq('id', annonce.user_id)
-    .maybeSingle()
-
-  if (!profilTry.error) {
-    profil = profilTry.data
-  } else {
-    const profilFallback = await supabase
+  if (annonce.user_id) {
+    // Try reading email column if it exists
+    const profilTry = await supabase
       .from('profiles')
-      .select('nom_complet, telephone')
+      .select('nom_complet, telephone, email')
       .eq('id', annonce.user_id)
       .maybeSingle()
 
-    profil = profilFallback.data ?? null
+    if (!profilTry.error && profilTry.data) {
+      const profil = profilTry.data as ProfilAvecEmail
+      telephone = profil.telephone ?? null
+      nomProprietaire = profil.nom_complet ?? null
+      email = profil.email ?? null
+    } else {
+      // Fallback if profiles.email does not exist (or select fails)
+      const profilFallback = await supabase
+        .from('profiles')
+        .select('nom_complet, telephone')
+        .eq('id', annonce.user_id)
+        .maybeSingle()
+
+      if (profilFallback.data) {
+        const profil = profilFallback.data as ProfilSansEmail
+        telephone = profil.telephone ?? null
+        nomProprietaire = profil.nom_complet ?? null
+      }
+      email = null
+    }
   }
 
   const labelDuree = LABELS_DUREE[annonce.type_duree] ?? annonce.type_duree
@@ -85,17 +74,12 @@ export default async function PageDetailAnnonce({ params }: { params: Promise<{ 
 
   const caracteristiques = [
     { label: 'Chambres', valeur: `${annonce.chambres} chambre${annonce.chambres > 1 ? 's' : ''}`, icone: Bed },
-    {
-      label: 'Salles de bain',
-      valeur: `${annonce.salles_bain} salle${annonce.salles_bain > 1 ? 's' : ''}`,
-      icone: Bath,
-    },
+    { label: 'Salles de bain', valeur: `${annonce.salles_bain} salle${annonce.salles_bain > 1 ? 's' : ''}`, icone: Bath },
     ...(annonce.superficie ? [{ label: 'Superficie', valeur: `${annonce.superficie} m²`, icone: Square }] : []),
     ...(annonce.meuble ? [{ label: 'Meublé', valeur: 'Oui', icone: Sofa }] : []),
   ]
 
-  const telephone = profil?.telephone ?? null
-  const email = profil?.email ?? null
+  const redirectTo = `/connexion?redirect=/annonces/${id}`
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -112,7 +96,41 @@ export default async function PageDetailAnnonce({ params }: { params: Promise<{ 
         {/* Colonne principale */}
         <div className="lg:col-span-2">
           {/* Galerie photos */}
-          <ImageGallery images={annonce.images} titre={annonce.titre} />
+          <div className="rounded-2xl overflow-hidden bg-gray-100 mb-6">
+            {annonce.images && annonce.images.length > 0 ? (
+              <div className="grid gap-2">
+                <img
+                  src={annonce.images[0]}
+                  alt={annonce.titre}
+                  className="w-full h-80 object-cover"
+                />
+
+                {annonce.images.length > 1 && (
+                  <div
+                    className={`grid gap-2 ${
+                      annonce.images.length === 2 ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-3'
+                    }`}
+                  >
+                    {annonce.images.slice(1).map((url: string, i: number) => (
+                      <img
+                        key={`${url}-${i}`}
+                        src={url}
+                        alt={`${annonce.titre} - photo ${i + 2}`}
+                        className="w-full h-32 object-cover"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="w-full h-72 flex items-center justify-center">
+                <div className="text-center text-gray-400">
+                  <div className="text-7xl mb-3">🏠</div>
+                  <p>Aucune photo disponible</p>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Infos principales */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6">
@@ -196,16 +214,30 @@ export default async function PageDetailAnnonce({ params }: { params: Promise<{ 
         {/* Sidebar */}
         <div className="lg:col-span-1">
           <div className="sticky top-20">
-            {/* Prix */}
+            {/* Prix + Contact */}
             <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-4">
               <div className="text-center mb-6">
                 <p className="text-4xl font-bold text-gray-900">{annonce.prix.toLocaleString('fr-TN')} TND</p>
                 <p className="text-gray-400 text-sm mt-1">par mois</p>
               </div>
 
-              {/* ✅ Contact (hidden unless logged in) */}
+              {nomProprietaire && (
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-4">
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
+                    style={{ backgroundColor: '#C8102E' }}
+                  >
+                    {nomProprietaire.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">Propriétaire</p>
+                    <p className="text-sm font-semibold text-gray-800">{nomProprietaire}</p>
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-col gap-3">
-                {/* PHONE */}
+                {/* Téléphone */}
                 {estConnecte ? (
                   telephone ? (
                     <a
@@ -217,51 +249,51 @@ export default async function PageDetailAnnonce({ params }: { params: Promise<{ 
                       +216 {telephone}
                     </a>
                   ) : (
-                    <div className="w-full flex items-center justify-center gap-2 text-gray-500 font-semibold py-3.5 rounded-xl border border-gray-200 bg-gray-50">
+                    <div className="w-full flex items-center justify-center gap-2 text-gray-400 font-medium py-3.5 rounded-xl border border-gray-200 bg-gray-50 text-sm">
                       <Phone className="w-4 h-4" />
-                      Non renseigné
+                      Numéro non renseigné
                     </div>
                   )
                 ) : (
                   <Link
-                    href={`/connexion?redirect=/annonces/${id}`}
+                    href={redirectTo}
                     className="w-full flex items-center justify-center gap-2 text-white font-semibold py-3.5 rounded-xl transition-opacity hover:opacity-90"
                     style={{ backgroundColor: '#C8102E' }}
                   >
                     <Phone className="w-4 h-4" />
-                    Afficher le numéro (connexion)
+                    Connexion pour voir le contact
                   </Link>
                 )}
 
-                {/* EMAIL */}
+                {/* Email */}
                 {estConnecte ? (
                   email ? (
                     <a
-                      href={`mailto:${email}?subject=${encodeURIComponent(`Annonce TunisiaRent : ${annonce.titre}`)}`}
+                      href={`mailto:${email}?subject=${encodeURIComponent('Annonce TunisiaRent : ' + annonce.titre)}`}
                       className="w-full flex items-center justify-center gap-2 font-semibold py-3.5 rounded-xl border-2 border-gray-200 text-gray-700 hover:border-gray-300 transition-colors"
                     >
                       <Mail className="w-4 h-4" />
-                      Envoyer un email
+                      {email}
                     </a>
                   ) : (
-                    <div className="w-full flex items-center justify-center gap-2 font-semibold py-3.5 rounded-xl border-2 border-gray-200 text-gray-500 bg-gray-50">
+                    <div className="w-full flex items-center justify-center gap-2 text-gray-400 font-medium py-3.5 rounded-xl border border-gray-200 bg-gray-50 text-sm">
                       <Mail className="w-4 h-4" />
-                      Non renseigné
+                      Email non renseigné
                     </div>
                   )
                 ) : (
                   <Link
-                    href={`/connexion?redirect=/annonces/${id}`}
-                    className="w-full flex items-center justify-center gap-2 font-semibold py-3.5 rounded-xl border-2 border-gray-200 text-gray-700 hover:border-gray-300 transition-colors"
+                    href={redirectTo}
+                    className="w-full flex items-center justify-center gap-2 font-medium py-3.5 rounded-xl border-2 border-gray-200 text-gray-500 hover:border-gray-300 transition-colors"
                   >
                     <Mail className="w-4 h-4" />
-                    Afficher l'email (connexion)
+                    Connexion pour contacter
                   </Link>
                 )}
               </div>
 
               <p className="text-center text-xs text-gray-400 mt-4">
-                Annonce publiée le{' '}
+                Publié le{' '}
                 {new Date(annonce.created_at).toLocaleDateString('fr-TN', {
                   day: 'numeric',
                   month: 'long',
