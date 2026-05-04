@@ -1,5 +1,7 @@
+'use client'
+import { useState } from 'react'
 import Link from 'next/link'
-import { MapPin, Bed, Bath, Square, Sofa } from 'lucide-react'
+import { MapPin, Bed, Bath, Square, Sofa, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Listing, LABELS_DUREE, COULEURS_DUREE } from '@/lib/types'
 
 type Props = {
@@ -7,17 +9,32 @@ type Props = {
 }
 
 export default function CarteAnnonce({ annonce }: Props) {
+  const [imageIndex, setImageIndex] = useState(0)
+  
   const labelDuree = LABELS_DUREE[annonce.type_duree] ?? annonce.type_duree
   const couleurDuree = COULEURS_DUREE[annonce.type_duree] ?? 'bg-gray-100 text-gray-700'
+  
+  const hasImages = annonce.images && annonce.images.length > 0
+  const currentImage = hasImages ? annonce.images[imageIndex] : null
+  
+  const handlePrev = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setImageIndex((prev) => (prev === 0 ? annonce.images!.length - 1 : prev - 1))
+  }
+  
+  const handleNext = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setImageIndex((prev) => (prev === annonce.images!.length - 1 ? 0 : prev + 1))
+  }
 
   return (
     <Link href={`/annonces/${annonce.id}`} className="group block">
       <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-200">
         {/* Image */}
         <div className="relative h-52 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-          {annonce.images && annonce.images.length > 0 ? (
+          {currentImage ? (
             <img
-              src={annonce.images[0]}
+              src={currentImage}
               alt={annonce.titre}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
@@ -29,6 +46,30 @@ export default function CarteAnnonce({ annonce }: Props) {
               </div>
             </div>
           )}
+          
+          {/* Navigation buttons - only show if multiple images */}
+          {hasImages && annonce.images.length > 1 && (
+            <>
+              <button
+                onClick={handlePrev}
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleNext}
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+              
+              {/* Image counter */}
+              <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                {imageIndex + 1}/{annonce.images.length}
+              </div>
+            </>
+          )}
+          
           {/* Badge durée */}
           <span className={`absolute top-3 left-3 text-xs font-semibold px-3 py-1 rounded-full ${couleurDuree}`}>
             {labelDuree}
