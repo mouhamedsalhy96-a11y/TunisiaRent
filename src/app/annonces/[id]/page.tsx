@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { MapPin, Bed, Bath, Square, Sofa, Phone, Mail, ArrowLeft, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
+import ImageGallery from '@/components/ImageGallery'
 import { LABELS_DUREE, COULEURS_DUREE } from '@/lib/types'
 
 export default async function PageDetailAnnonce({ params }: { params: Promise<{ id: string }> }) {
@@ -111,18 +112,7 @@ export default async function PageDetailAnnonce({ params }: { params: Promise<{ 
         {/* Colonne principale */}
         <div className="lg:col-span-2">
           {/* Galerie photos */}
-          <div className="rounded-2xl overflow-hidden bg-gray-100 h-72 md:h-96 mb-6 relative">
-            {annonce.images?.[0] ? (
-              <img src={annonce.images[0]} alt={annonce.titre} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-center text-gray-400">
-                  <div className="text-7xl mb-3">🏠</div>
-                  <p>Aucune photo disponible</p>
-                </div>
-              </div>
-            )}
-          </div>
+          <ImageGallery images={annonce.images} titre={annonce.titre} />
 
           {/* Infos principales */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6">
@@ -265,7 +255,7 @@ export default async function PageDetailAnnonce({ params }: { params: Promise<{ 
                     className="w-full flex items-center justify-center gap-2 font-semibold py-3.5 rounded-xl border-2 border-gray-200 text-gray-700 hover:border-gray-300 transition-colors"
                   >
                     <Mail className="w-4 h-4" />
-                    Afficher l’email (connexion)
+                    Afficher l'email (connexion)
                   </Link>
                 )}
               </div>
