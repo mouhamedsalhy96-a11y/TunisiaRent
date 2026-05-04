@@ -1,61 +1,61 @@
-# TunisiaRent 🏠🇹🇳
-**Plateforme de location en Tunisie** pour la **courte durée**, la **longue durée** et les **étudiants**, dans **toutes les villes/gouvernorats**.
+# TunisiaRent 🏠🇹🇳  
+**A rental platform for short-term, long-term, and student housing across all cities/governorates in Tunisia.**
 
-TunisiaRent est une marketplace moderne qui permet de **rechercher** des logements par région/catégorie/type et de **publier** des annonces de location. Le projet a été réalisé comme **projet portfolio** avec une interface soignée, authentification et sécurité (Supabase + RLS).
-
----
-
-## ✨ Fonctionnalités
-
-### 🔎 Recherche & navigation
-- Parcourir les annonces dans **tous les gouvernorats** de Tunisie
-- Filtres par **type de location** :
-  - **Long terme** (mois/années)
-  - **Court terme** (vacances, séjours courts)
-  - **Étudiants** (logements proches des universités)
-- Filtres par **catégorie** : Appartement, Maison, Villa, Chambre, Studio
-- Page détail d’annonce avec galerie + caractéristiques
-
-### 📝 Publication d’annonces
-- Utilisateurs connectés :
-  - Création d’annonces (titre, description, prix, adresse…)
-  - Sélection de la catégorie et de la région
-  - Nombre de chambres / salles de bain, superficie, meublé
-  - Ajout de photos (URLs stockées dans `images[]`)
-
-### 👤 Espace utilisateur (Dashboard)
-- Gestion des annonces personnelles
-- Statistiques rapides (total, actives, long terme, court terme)
-
-### 🔐 Authentification & confidentialité
-- Inscription / connexion (Supabase Auth)
-- Routes protégées (ex: `/dashboard`, `/ajouter`)
-- **Téléphone & email masqués par défaut**
-  - **Connexion requise** pour afficher les informations de contact
+TunisiaRent is a modern marketplace where users can **browse and search rentals** and **publish their own listings**. Built as a portfolio project with a clean UI, authentication, a dashboard for managing listings, and a Supabase-powered backend (DB + Auth + Storage).
 
 ---
 
-## 🧰 Stack technique
+## ✨ Features
+
+### 🔎 Browse & Search
+- Browse listings across **all Tunisian governorates**
+- Filter by rental type:
+  - **Long-term** (months/years)
+  - **Short-term** (vacations, short stays)
+  - **Student** (near universities)
+- Browse by categories (Apartment, House, Villa, Room, Studio)
+- Listing details page with gallery + specs
+
+### 📝 Publish Listings
+- Authenticated users can publish a listing with:
+  - title, description, price
+  - category, region, address
+  - rooms, bathrooms, surface area, furnished flag
+  - photos (stored as URLs in `images[]`)
+
+### 👤 Dashboard
+- Manage your listings from a personal dashboard
+- Quick stats (total, active, long-term, short-term)
+
+### 🔐 Authentication & Privacy
+- Sign up / login
+- Protected routes (publish listing + dashboard)
+- **Phone/email are hidden by default** and can be revealed only after login (UI + database policies when RLS is enabled)
+
+---
+
+## 🧰 Tech Stack
 - **Next.js** (App Router)
 - **Tailwind CSS**
-- **Supabase** (Auth, Postgres, Storage)
-- **lucide-react** (icônes)
+- **Supabase** (Auth + Postgres + Storage)
+- **lucide-react** (icons)
 
 ---
 
-## 📌 Routes principales
-- `/` — Accueil (hero + recherche + catégories + régions)
-- `/annonces` — Liste / recherche d’annonces
-- `/annonces/[id]` — Détail d’une annonce
-- `/ajouter` — Publier une annonce *(protégé)*
-- `/dashboard` — Espace utilisateur *(protégé)*
-- `/connexion` — Connexion
-- `/inscription` — Inscription
+## 🗺️ Main Routes
+- `/` — Home (hero + search + categories + regions)
+- `/annonces` — Listings page (browse/search)
+- `/annonces/[id]` — Listing details
+- `/ajouter` — Publish a listing *(protected)*
+- `/dashboard` — User dashboard *(protected)*
+- `/connexion` — Login
+- `/inscription` — Signup
 
 ---
 
-## 🚀 Installation & démarrage (local)
+## 🚀 Getting Started (Local)
 
-### 1) Installer les dépendances
+### 1) Install dependencies
 ```bash
 npm install
+``
