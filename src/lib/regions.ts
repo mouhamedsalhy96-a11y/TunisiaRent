@@ -1,0 +1,28 @@
+export const REGIONS = [
+  { nom: 'Tunis', slug: 'tunis' },
+  { nom: 'Ariana', slug: 'ariana' },
+  { nom: 'Ben Arous', slug: 'ben-arous' },
+  { nom: 'La Manouba', slug: 'la-manouba' },
+  { nom: 'Bizerte', slug: 'bizerte' },
+  { nom: 'Nabeul', slug: 'nabeul' },
+  { nom: 'Zaghouan', slug: 'zaghouan' },
+  { nom: 'Béja', slug: 'beja' },
+  { nom: 'Jendouba', slug: 'jendouba' },
+  { nom: 'Le Kef', slug: 'le-kef' },
+  { nom: 'Siliana', slug: 'siliana' },
+  { nom: 'Sousse', slug: 'sousse' },
+  { nom: 'Monastir', slug: 'monastir' },
+  { nom: 'Mahdia', slug: 'mahdia' },
+  { nom: 'Sfax', slug: 'sfax' },
+  { nom: 'Kairouan', slug: 'kairouan' },
+  { nom: 'Kasserine', slug: 'kasserine' },
+  { nom: 'Sidi Bouzid', slug: 'sidi-bouzid' },
+  { nom: 'Gabès', slug: 'gabes' },
+  { nom: 'Médenine', slug: 'medenine' },
+  { nom: 'Tataouine', slug: 'tataouine' },
+  { nom: 'Gafsa', slug: 'gafsa' },
+  { nom: 'Tozeur', slug: 'tozeur' },
+  { nom: 'Kébili', slug: 'kebili' },
+] as const
+
+export type RegionSlug = typeof REGIONS[number]['slug']
