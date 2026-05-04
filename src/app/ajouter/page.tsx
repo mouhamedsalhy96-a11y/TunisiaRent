@@ -87,6 +87,13 @@ export default function PageAjouter() {
       return
     }
 
+    // Validate images
+    if (images.length === 0) {
+      setErreur('Vous devez ajouter au moins une photo.')
+      setChargement(false)
+      return
+    }
+
     const { data: regionData } = await supabase
       .from('regions')
       .select('id')
@@ -98,6 +105,9 @@ export default function PageAjouter() {
       setChargement(false)
       return
     }
+
+    // Ensure images is a proper array
+    const imageArray = Array.isArray(images) ? images : []
 
     const { error } = await supabase.from('listings').insert({
       titre: form.titre,
@@ -112,7 +122,7 @@ export default function PageAjouter() {
       superficie: form.superficie ? parseFloat(form.superficie) : null,
       meuble: form.meuble,
       disponible: true,
-      images: images,
+      images: imageArray,
       user_id: utilisateur.id,
     })
 
@@ -144,6 +154,7 @@ export default function PageAjouter() {
             <button
               onClick={() => {
                 setSucces(false)
+                setImages([])
                 setForm({
                   titre: '',
                   description: '',
@@ -403,15 +414,18 @@ export default function PageAjouter() {
 
         {/* Photos */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6">
-           <h2 className="font-semibold text-gray-800 mb-1">Photos</h2>
+           <h2 className="font-semibold text-gray-800 mb-1">Photos *</h2>
            <p className="text-xs text-gray-400 mb-4">La première photo sera la photo principale de l&apos;annonce</p>
            <UploadPhotos images={images} onImagesChange={setImages} />
+           {images.length === 0 && (
+             <p className="text-red-500 text-xs mt-2">Au moins une photo est requise</p>
+           )}
         </div>
 
         {/* Bouton soumettre */}
         <button
           type="submit"
-          disabled={chargement}
+          disabled={chargement || images.length === 0}
           className="w-full text-white font-semibold py-4 rounded-xl transition-opacity hover:opacity-90 disabled:opacity-60 text-base"
           style={{ backgroundColor: '#C8102E' }}
         >
