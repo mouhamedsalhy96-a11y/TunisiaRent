@@ -1,13 +1,23 @@
 'use client'
+
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Home, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 
 export default function PageConnexion() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
+  const searchParams = useSearchParams()
+
+  const presetEmail = searchParams.get('email') ?? ''
+  const already = searchParams.get('already') === '1'
+
+  // ✅ Only store what the user types.
+  // If user didn't type yet, we display presetEmail from URL.
+  const [emailInput, setEmailInput] = useState('')
+  const email = emailInput || presetEmail
+
   const [motDePasse, setMotDePasse] = useState('')
   const [afficherMdp, setAfficherMdp] = useState(false)
   const [chargement, setChargement] = useState(false)
@@ -22,6 +32,15 @@ export default function PageConnexion() {
     const { error } = await supabase.auth.signInWithPassword({ email, password: motDePasse })
 
     if (error) {
+      const msg = (error.message || '').toLowerCase()
+
+      // ✅ Email not confirmed -> send user to check-email page
+      if (msg.includes('not confirmed') || msg.includes('email_not_confirmed')) {
+        router.push(`/verifier-email?email=${encodeURIComponent(email)}`)
+        router.refresh()
+        return
+      }
+
       setErreur('Email ou mot de passe incorrect.')
       setChargement(false)
       return
@@ -49,6 +68,12 @@ export default function PageConnexion() {
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
+          {already && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl px-4 py-3 mb-5">
+              Un compte existe déjà avec cet email. Connectez-vous ci-dessous.
+            </div>
+          )}
+
           {erreur && (
             <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 mb-5">
               {erreur}
@@ -63,7 +88,7 @@ export default function PageConnexion() {
                 <input
                   type="email"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmailInput(e.target.value)}
                   required
                   placeholder="votre@email.com"
                   className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-300 focus:ring-2 focus:ring-red-50 transition-all"
@@ -78,7 +103,7 @@ export default function PageConnexion() {
                 <input
                   type={afficherMdp ? 'text' : 'password'}
                   value={motDePasse}
-                  onChange={e => setMotDePasse(e.target.value)}
+                  onChange={(e) => setMotDePasse(e.target.value)}
                   required
                   placeholder="••••••••"
                   className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-300 focus:ring-2 focus:ring-red-50 transition-all"
@@ -91,6 +116,13 @@ export default function PageConnexion() {
                   {afficherMdp ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+            </div>
+
+            {/* Forgot password link */}
+            <div className="text-right">
+              <Link href="/mot-de-passe-oublie" className="text-sm font-medium hover:underline" style={{ color: '#C8102E' }}>
+                Mot de passe oublié ?
+              </Link>
             </div>
 
             <button

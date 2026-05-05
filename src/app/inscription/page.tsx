@@ -39,30 +39,31 @@ export default function PageInscription() {
     })
 
     if (error) {
-      if (error.message.includes('already registered') || error.message.includes('already been registered')) {
-        setErreur('Un compte existe déjà avec cet email.')
-      } else if (error.message.includes('Password')) {
-        setErreur('Le mot de passe doit contenir au moins 6 caractères.')
-      } else {
-        setErreur('Erreur : ' + error.message)
+      const msg = error.message || ''
+      if (msg.includes('already registered') || msg.includes('already been registered')) {
+        router.push(`/deja-inscrit?email=${encodeURIComponent(email)}`)
+        router.refresh()
+        return
       }
+      setErreur('Erreur : ' + msg)
       setChargement(false)
       return
     }
 
-    // ✅ If session exists, user is authenticated => we can write to DB
+    // ✅ Detect existing user (common with Confirm Email ON)
+    if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      router.push(`/deja-inscrit?email=${encodeURIComponent(email)}`)
+      router.refresh()
+      return
+    }
+
+    // ✅ Email confirmation OFF -> session exists
     if (data.session && data.user) {
       const userId = data.user.id
 
-      // public profile
       await supabase.from('profiles').upsert({
         id: userId,
         nom_complet: nom,
-      })
-
-      // private contacts
-      await supabase.from('profile_contacts').upsert({
-        id: userId,
         telephone: telephone || null,
         email: email || null,
       })
@@ -72,7 +73,9 @@ export default function PageInscription() {
       return
     }
 
-    // Email confirmation enabled => show success screen
+    // ✅ Email confirmation ON -> no session
+    router.push(`/verifier-email?email=${encodeURIComponent(email)}`)
+    router.refresh()
     setSucces(true)
     setChargement(false)
   }

@@ -15,6 +15,20 @@ export default async function PageDashboard() {
     redirect('/connexion')
   }
 
+  // Ensure profile exists and is up to date
+  const nomComplet = user.user_metadata?.nom_complet
+  const telephone = user.user_metadata?.telephone
+  const email = user.email
+
+  if (nomComplet || telephone || email) {
+    await supabase.from('profiles').upsert({
+      id: user.id,
+      nom_complet: nomComplet || null,
+      telephone: telephone || null,
+      email: email || null,
+    })
+  }
+
   const { data: annonces } = await supabase
     .from('listings')
     .select('*, categories(*), regions(*)')

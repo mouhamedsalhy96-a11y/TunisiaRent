@@ -36,6 +36,10 @@ const regions = [
   { nom: 'Kébili', slug: 'kebili' },
 ]
 
+// ✅ Only show 4–5 “popular” regions (exclude Ariana + Ben Arous)
+const popularRegionSlugs = ['tunis', 'sousse', 'monastir', 'sfax', 'nabeul']
+const popularRegions = regions.filter((r) => popularRegionSlugs.includes(r.slug))
+
 const typesLocation = [
   {
     titre: 'Long terme',
@@ -64,10 +68,7 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section
-        className="relative"
-        style={{ background: 'linear-gradient(135deg, #C8102E 0%, #9e0c23 100%)' }}
-      >
+      <section className="relative" style={{ background: 'linear-gradient(135deg, #C8102E 0%, #9e0c23 100%)' }}>
         <div className="max-w-7xl mx-auto px-4 py-20 text-center text-white">
           <h1 className="text-4xl md:text-6xl font-bold mb-4">
             Trouvez votre logement
@@ -79,7 +80,6 @@ export default function HomePage() {
             Des milliers d&apos;annonces de location à travers toute la Tunisie. Appartements, maisons, villas, chambres.
           </p>
 
-          {/* Barre de recherche */}
           <BarreRecherche />
         </div>
       </section>
@@ -96,11 +96,7 @@ export default function HomePage() {
                 href={type.lien}
                 className="group relative overflow-hidden rounded-2xl p-8 text-white transition-transform hover:-translate-y-1 hover:shadow-xl"
                 style={{
-                  backgroundColor: type.couleur.replace('bg-', '').includes('blue')
-                    ? '#2563eb'
-                    : type.couleur.replace('bg-', '').includes('green')
-                      ? '#16a34a'
-                      : '#9333ea',
+                  backgroundColor: type.couleur.includes('blue') ? '#2563eb' : type.couleur.includes('green') ? '#16a34a' : '#9333ea',
                 }}
               >
                 <Icone className="w-10 h-10 mb-4 opacity-90" />
@@ -128,9 +124,7 @@ export default function HomePage() {
                   href={`/annonces?categorie=${cat.slug}`}
                   className="flex flex-col items-center gap-3 p-6 rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all group"
                 >
-                  <div
-                    className={`w-14 h-14 rounded-2xl ${cat.couleur} flex items-center justify-center group-hover:scale-110 transition-transform`}
-                  >
+                  <div className={`w-14 h-14 rounded-2xl ${cat.couleur} flex items-center justify-center group-hover:scale-110 transition-transform`}>
                     <Icone className="w-7 h-7" />
                   </div>
                   <span className="font-semibold text-gray-800">{cat.nom}</span>
@@ -145,7 +139,7 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-4 py-16">
         <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Régions populaires</h2>
         <div className="flex flex-wrap justify-center gap-3">
-          {regions.map((region) => (
+          {popularRegions.map((region) => (
             <Link
               key={region.slug}
               href={`/annonces?region=${region.slug}`}
