@@ -14,8 +14,7 @@ export default function ReinitialiserMotDePasse() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    // When user arrives via reset link, Supabase sets a recovery session.
-    // We'll just check user exists.
+  
     const supabase = createClient()
     supabase.auth.getUser().then(({ data }) => {
       setReady(!!data.user)

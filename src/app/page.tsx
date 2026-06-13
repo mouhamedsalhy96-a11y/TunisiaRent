@@ -36,7 +36,6 @@ const regions = [
   { nom: 'Kébili', slug: 'kebili' },
 ]
 
-// ✅ Only show 4–5 “popular” regions (exclude Ariana + Ben Arous)
 const popularRegionSlugs = ['tunis', 'sousse', 'monastir', 'sfax', 'nabeul']
 const popularRegions = regions.filter((r) => popularRegionSlugs.includes(r.slug))
 

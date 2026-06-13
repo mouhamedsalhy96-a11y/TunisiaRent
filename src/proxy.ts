@@ -34,7 +34,6 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/connexion', request.url))
   }
 
-  // Rediriger vers dashboard si déjà connecté et on va sur connexion/inscription
   const routesAuth = ['/connexion', '/inscription']
   const estRouteAuth = routesAuth.some(route =>
     request.nextUrl.pathname.startsWith(route)

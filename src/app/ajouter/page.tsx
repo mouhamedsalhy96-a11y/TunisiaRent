@@ -80,7 +80,7 @@ export default function PageAjouter() {
     setChargement(true)
     setErreur('')
 
-    // ✅ Guard required to use utilisateur.id safely (and remove underline)
+   
     if (!utilisateur) {
       setErreur('Vous devez être connecté pour publier une annonce.')
       setChargement(false)

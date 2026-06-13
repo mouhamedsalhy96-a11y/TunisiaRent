@@ -34,7 +34,6 @@ export default async function PageDetailAnnonce({
 
   if (error || !annonce) notFound()
 
-  // ✅ Profil propriétaire (nom + téléphone + email si colonne existe)
   let telephone: string | null = null
   let email: string | null = null
   let nomProprietaire: string | null = null

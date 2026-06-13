@@ -50,7 +50,6 @@ export default function PageInscription() {
       return
     }
 
-    // ✅ Detect existing user (common with Confirm Email ON)
     if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
       router.push(`/deja-inscrit?email=${encodeURIComponent(email)}`)
       router.refresh()
